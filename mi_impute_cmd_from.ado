@@ -55,6 +55,7 @@ real rowvector sample_posterior(real rowvector b, real matrix V)
 end
 
 *! v.1.0.1 25dec11 modified sampling from posterior for logit 
+*! v.1.0.2 26apr17 modified sampling from posterior for logit, adding psi for additional uncertainty
 capture program drop mi_impute_cmd_from
 program define mi_impute_cmd_from 
     version 18.0
@@ -97,12 +98,26 @@ program define mi_impute_cmd_from
  				qui putmata `idn' X=($MI_IMPUTE_user_indepv 1) if  $MI_IMPUTE_user_miss==1  , replace 
 				mata: beta = st_matrix("`beta'")
 				mata: VCbeta = st_matrix("`V'")
-				mata: st_matrix("`bstar'", sample_posterior(beta, VCbeta))
+				
+				if "$MI_IMPUTE_user_iPsi" != "" {
+					// using both sources of uncertainty (V and Psi)
+					*di in red "Psi used"
+					mata: Psi = st_matrix("$MI_IMPUTE_user_iPsi")
+					mata: beta_draw = sample_posterior(beta, VCbeta) // uncertainty in pooled mean (V)
+					mata: st_matrix("`bstar'", sample_posterior(beta_draw, Psi)) // between-site draw (Psi)
+				}
+				else {
+					// no Psi available
+					*di in red "No Psi used"
+					mata: st_matrix("`bstar'", sample_posterior(beta, VCbeta))
+				}
+				
 				mata: bi = st_matrix("`bstar'")
 				mata: np = st_numscalar("`np'")
 				noi mata: yi = mi_impute_cmd_from_xb_logit(X, bi)
 				qui getmata yi, id(`idn') update force
 				qui replace `first_ivar'  = yi if $MI_IMPUTE_user_touse==1	
+		
 			}
 	
 			if "`imodel'" == "mlogit" {

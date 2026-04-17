@@ -2,7 +2,9 @@
 capture program drop mi_impute_cmd_from_parse
 program mi_impute_cmd_from_parse
       version 18
-      syntax anything [if]  ,  b(namelist min=1) v(namelist min=1) IModel(string)  [ * ]
+     
+	 *! v.1.0.2 26apr17 add Psi after mvmeta for between study variance
+	 syntax anything [if]  ,  b(namelist min=1) v(namelist min=1) IModel(string) [ psi(namelist min=1) * ] // add psi as an option here
 	
       gettoken ivar xvars : anything
 	  
@@ -13,6 +15,18 @@ program mi_impute_cmd_from_parse
 	  global MI_IMPUTE_user_iV  `v'	  
 	  global MI_IMPUTE_user_imodel `imodel'
 	  global MI_IMPUTE_user_ipred `ip'
+	  
+	****
+	  // pass psi through if provided; downstream code checks if it is defined. if not, return to V
+	  if "`psi'" != "" {
+	        confirm matrix `psi'
+	        global MI_IMPUTE_user_iPsi `psi'
+	  }
+	  else {
+	        global MI_IMPUTE_user_iPsi ""
+			di in red "No between-study variation (Psi) was passed through"
+	  }
+	****
  
 	  if "`imodel'" == "qreg" {
 			    tempname sub 
