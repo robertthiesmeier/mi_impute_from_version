@@ -1,4 +1,5 @@
-# mi_impute_from_version
+# Current version of ```mi_impute_from```
+
 Updated version of ```mi_impute_from```
 
 Version 1.0.1, Dec 2025: multivariate draw from the posterior for binary variables 
