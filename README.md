@@ -1,4 +1,8 @@
-# Current version of ```mi_impute_from```
+```mi_impute_from```
+Intall latest version: 
+```{r}
+test tthis 
+```
 
 Updated version of ```mi_impute_from```
 
